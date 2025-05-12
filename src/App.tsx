@@ -216,17 +216,21 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center">
+        <header className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">File Compressor</h1>
-        </div>
+          <p className="text-gray-600 mb-4">Compress your images and PDFs while maintaining quality. Supports JPG, PNG, WebP, and PDF formats.</p>
+        </header>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <section className="bg-white p-6 rounded-lg shadow-md" role="main">
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
               ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
+            role="button"
+            tabIndex={0}
+            aria-label="Drag and drop file upload area"
           >
             <input {...getInputProps()} />
             {isDragActive ? (
@@ -249,7 +253,7 @@ function App() {
             <div className="mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Original File Preview */}
-                <div className="border rounded-lg p-4">
+                <div className="border rounded-lg p-4" role="region" aria-label="Original file preview">
                   <h3 className="font-medium text-gray-900 mb-2">Original File</h3>
                   {file.type.startsWith('image/') ? (
                     <img
@@ -260,6 +264,9 @@ function App() {
                   ) : file.type === 'application/pdf' && (
                     <div className="mb-3">
                       <canvas ref={originalCanvasRef} className="max-w-full" />
+                      {pdfPreviews.original && (
+                        <img src={pdfPreviews.original} alt="PDF Preview" className="hidden" />
+                      )}
                     </div>
                   )}
                   <p className="text-sm text-gray-500">Name: {file.name}</p>
@@ -269,7 +276,7 @@ function App() {
 
                 {/* Compressed File Preview */}
                 {compressedFile && (
-                  <div className="border rounded-lg p-4">
+                  <div className="border rounded-lg p-4" role="region" aria-label="Compressed file preview">
                     <h3 className="font-medium text-gray-900 mb-2">Compressed File</h3>
                     {file.type.startsWith('image/') && compressedPreview ? (
                       <img
@@ -280,6 +287,9 @@ function App() {
                     ) : file.type === 'application/pdf' && (
                       <div className="mb-3">
                         <canvas ref={compressedCanvasRef} className="max-w-full" />
+                        {pdfPreviews.compressed && (
+                          <img src={pdfPreviews.compressed} alt="Compressed PDF Preview" className="hidden" />
+                        )}
                       </div>
                     )}
                     <p className="text-sm text-gray-500">
@@ -413,9 +423,9 @@ function App() {
               </button>
             </div>
           )}
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
 

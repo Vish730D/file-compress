@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://file-compressor-4yk219yky-vishnu-dutts-projects-d670a968.vercel.app/sitemap.xml 
