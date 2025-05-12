@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import imageCompression from 'browser-image-compression';
 import { PDFDocument } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
+import Blog from './components/Blog';
 
 // Initialize PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -215,217 +216,246 @@ function App() {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
+  // Add structured data for SEO
+  useEffect(() => {
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "File Compressor",
+      "applicationCategory": "Utility",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "Free online tool to compress images and PDF files. Reduce file size while maintaining quality. Supports JPG, PNG, WebP, and PDF formats."
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(structuredData);
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
   return (
-    <main className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <header className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">File Compressor</h1>
-          <p className="text-gray-600 mb-4">Compress your images and PDFs while maintaining quality. Supports JPG, PNG, WebP, and PDF formats.</p>
-        </header>
+    <>
+      <main className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <header className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-8">File Compressor</h1>
+            <p className="text-gray-600 mb-4">Compress your images and PDFs while maintaining quality. Supports JPG, PNG, WebP, and PDF formats.</p>
+          </header>
 
-        <section className="bg-white p-6 rounded-lg shadow-md" role="main">
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-              ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
-            role="button"
-            tabIndex={0}
-            aria-label="Drag and drop file upload area"
-          >
-            <input {...getInputProps()} />
-            {isDragActive ? (
-              <p className="text-blue-500">Drop the file here...</p>
-            ) : (
-              <p className="text-gray-500">
-                Drag & drop a file here, or click to select<br />
-                <span className="text-sm">(JPG, PNG, WebP, or PDF)</span>
-              </p>
-            )}
-          </div>
-
-          {error && (
-            <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
-              {error}
+          <section className="bg-white p-6 rounded-lg shadow-md" role="main">
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
+                ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
+              role="button"
+              tabIndex={0}
+              aria-label="Drag and drop file upload area"
+            >
+              <input {...getInputProps()} />
+              {isDragActive ? (
+                <p className="text-blue-500">Drop the file here...</p>
+              ) : (
+                <p className="text-gray-500">
+                  Drag & drop a file here, or click to select<br />
+                  <span className="text-sm">(JPG, PNG, WebP, or PDF)</span>
+                </p>
+              )}
             </div>
-          )}
 
-          {file && !error && (
-            <div className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Original File Preview */}
-                <div className="border rounded-lg p-4" role="region" aria-label="Original file preview">
-                  <h3 className="font-medium text-gray-900 mb-2">Original File</h3>
-                  {file.type.startsWith('image/') ? (
-                    <img
-                      src={file.preview}
-                      alt="Original"
-                      className="w-full h-48 object-contain mb-3"
-                    />
-                  ) : file.type === 'application/pdf' && (
-                    <div className="mb-3">
-                      <canvas ref={originalCanvasRef} className="max-w-full" />
-                      {pdfPreviews.original && (
-                        <img src={pdfPreviews.original} alt="PDF Preview" className="hidden" />
-                      )}
-                    </div>
-                  )}
-                  <p className="text-sm text-gray-500">Name: {file.name}</p>
-                  <p className="text-sm text-gray-500">Size: {formatSize(file.size)}</p>
-                  <p className="text-sm text-gray-500">Type: {file.type}</p>
-                </div>
+            {error && (
+              <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
+                {error}
+              </div>
+            )}
 
-                {/* Compressed File Preview */}
-                {compressedFile && (
-                  <div className="border rounded-lg p-4" role="region" aria-label="Compressed file preview">
-                    <h3 className="font-medium text-gray-900 mb-2">Compressed File</h3>
-                    {file.type.startsWith('image/') && compressedPreview ? (
+            {file && !error && (
+              <div className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Original File Preview */}
+                  <div className="border rounded-lg p-4" role="region" aria-label="Original file preview">
+                    <h3 className="font-medium text-gray-900 mb-2">Original File</h3>
+                    {file.type.startsWith('image/') ? (
                       <img
-                        src={compressedPreview}
-                        alt="Compressed"
+                        src={file.preview}
+                        alt="Original"
                         className="w-full h-48 object-contain mb-3"
                       />
                     ) : file.type === 'application/pdf' && (
                       <div className="mb-3">
-                        <canvas ref={compressedCanvasRef} className="max-w-full" />
-                        {pdfPreviews.compressed && (
-                          <img src={pdfPreviews.compressed} alt="Compressed PDF Preview" className="hidden" />
+                        <canvas ref={originalCanvasRef} className="max-w-full" />
+                        {pdfPreviews.original && (
+                          <img src={pdfPreviews.original} alt="PDF Preview" className="hidden" />
                         )}
                       </div>
                     )}
-                    <p className="text-sm text-gray-500">
-                      Size: {formatSize(compressedFile.size)}
-                    </p>
-                    <p className="text-sm font-medium text-green-600">
-                      Reduced by {getCompressionRatio()}%
-                    </p>
+                    <p className="text-sm text-gray-500">Name: {file.name}</p>
+                    <p className="text-sm text-gray-500">Size: {formatSize(file.size)}</p>
+                    <p className="text-sm text-gray-500">Type: {file.type}</p>
                   </div>
-                )}
-              </div>
 
-              <div className="mt-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      className="form-radio"
-                      checked={!useCustomSize}
-                      onChange={() => setUseCustomSize(false)}
-                    />
-                    <span className="ml-2">Use slider</span>
-                  </label>
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      className="form-radio"
-                      checked={useCustomSize}
-                      onChange={() => setUseCustomSize(true)}
-                    />
-                    <span className="ml-2">Specify size</span>
-                  </label>
+                  {/* Compressed File Preview */}
+                  {compressedFile && (
+                    <div className="border rounded-lg p-4" role="region" aria-label="Compressed file preview">
+                      <h3 className="font-medium text-gray-900 mb-2">Compressed File</h3>
+                      {file.type.startsWith('image/') && compressedPreview ? (
+                        <img
+                          src={compressedPreview}
+                          alt="Compressed"
+                          className="w-full h-48 object-contain mb-3"
+                        />
+                      ) : file.type === 'application/pdf' && (
+                        <div className="mb-3">
+                          <canvas ref={compressedCanvasRef} className="max-w-full" />
+                          {pdfPreviews.compressed && (
+                            <img src={pdfPreviews.compressed} alt="Compressed PDF Preview" className="hidden" />
+                          )}
+                        </div>
+                      )}
+                      <p className="text-sm text-gray-500">
+                        Size: {formatSize(compressedFile.size)}
+                      </p>
+                      <p className="text-sm font-medium text-green-600">
+                        Reduced by {getCompressionRatio()}%
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                {file.type.startsWith('image/') ? (
-                  useCustomSize ? (
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Target File Size
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1">
-                          <input
-                            type="number"
-                            min="1"
-                            max={sizeUnit === 'KB' ? file.size / 1024 : file.size / (1024 * 1024)}
-                            value={customSize}
-                            onChange={(e) => validateAndSetCustomSize(e.target.value)}
-                            className="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                            placeholder={`Enter target size in ${sizeUnit}`}
-                          />
+                <div className="mt-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        className="form-radio"
+                        checked={!useCustomSize}
+                        onChange={() => setUseCustomSize(false)}
+                      />
+                      <span className="ml-2">Use slider</span>
+                    </label>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        className="form-radio"
+                        checked={useCustomSize}
+                        onChange={() => setUseCustomSize(true)}
+                      />
+                      <span className="ml-2">Specify size</span>
+                    </label>
+                  </div>
+
+                  {file.type.startsWith('image/') ? (
+                    useCustomSize ? (
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Target File Size
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              min="1"
+                              max={sizeUnit === 'KB' ? file.size / 1024 : file.size / (1024 * 1024)}
+                              value={customSize}
+                              onChange={(e) => validateAndSetCustomSize(e.target.value)}
+                              className="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                              placeholder={`Enter target size in ${sizeUnit}`}
+                            />
+                          </div>
+                          <select
+                            value={sizeUnit}
+                            onChange={(e) => setSizeUnit(e.target.value as 'KB' | 'MB')}
+                            className="px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
+                          >
+                            <option value="KB">KB</option>
+                            <option value="MB">MB</option>
+                          </select>
                         </div>
-                        <select
-                          value={sizeUnit}
-                          onChange={(e) => setSizeUnit(e.target.value as 'KB' | 'MB')}
-                          className="px-3 py-2 border rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
-                        >
-                          <option value="KB">KB</option>
-                          <option value="MB">MB</option>
-                        </select>
+                        <p className="text-sm text-gray-500">
+                          Original size: {formatSize(file.size)}
+                        </p>
+                        {error && (
+                          <p className="text-sm text-red-600">{error}</p>
+                        )}
                       </div>
-                      <p className="text-sm text-gray-500">
-                        Original size: {formatSize(file.size)}
-                      </p>
-                      {error && (
-                        <p className="text-sm text-red-600">{error}</p>
-                      )}
-                    </div>
+                    ) : (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Target Size (MB): {compressionLevel}
+                        </label>
+                        <input
+                          type="range"
+                          min="0.1"
+                          max={Math.min(5, file.size / (1024 * 1024))}
+                          step="0.1"
+                          value={compressionLevel}
+                          onChange={(e) => setCompressionLevel(parseFloat(e.target.value))}
+                          className="w-full mt-2"
+                        />
+                      </div>
+                    )
                   ) : (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
-                        Target Size (MB): {compressionLevel}
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        PDF Compression Quality
                       </label>
-                      <input
-                        type="range"
-                        min="0.1"
-                        max={Math.min(5, file.size / (1024 * 1024))}
-                        step="0.1"
-                        value={compressionLevel}
-                        onChange={(e) => setCompressionLevel(parseFloat(e.target.value))}
-                        className="w-full mt-2"
-                      />
+                      <div className="flex gap-2">
+                        {(['low', 'medium', 'high'] as const).map((quality) => (
+                          <button
+                            key={quality}
+                            onClick={() => setPdfQuality(quality)}
+                            className={`flex-1 py-2 px-3 text-sm rounded-md capitalize
+                              ${pdfQuality === quality
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                          >
+                            {quality}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  )
-                ) : (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      PDF Compression Quality
-                    </label>
-                    <div className="flex gap-2">
-                      {(['low', 'medium', 'high'] as const).map((quality) => (
-                        <button
-                          key={quality}
-                          onClick={() => setPdfQuality(quality)}
-                          className={`flex-1 py-2 px-3 text-sm rounded-md capitalize
-                            ${pdfQuality === quality
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                          {quality}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
+                  )}
+                  
+                  <button
+                    onClick={compressFile}
+                    disabled={isCompressing}
+                    className={`mt-4 w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white
+                      ${isCompressing
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                      }`}
+                  >
+                    {isCompressing ? 'Compressing...' : 'Compress File'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {compressedFile && (
+              <div className="mt-4">
                 <button
-                  onClick={compressFile}
-                  disabled={isCompressing}
-                  className={`mt-4 w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white
-                    ${isCompressing
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-                    }`}
+                  onClick={downloadCompressedFile}
+                  className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white
+                    bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 >
-                  {isCompressing ? 'Compressing...' : 'Compress File'}
+                  Download Compressed File
                 </button>
               </div>
-            </div>
-          )}
-
-          {compressedFile && (
-            <div className="mt-4">
-              <button
-                onClick={downloadCompressedFile}
-                className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white
-                  bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              >
-                Download Compressed File
-              </button>
-            </div>
-          )}
-        </section>
-      </div>
-    </main>
+            )}
+          </section>
+        </div>
+      </main>
+      <Blog />
+    </>
   );
 }
 
